@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  email        String       @unique
+  name         String?
+  phoneNumber  String?
+  gender       GenderEnum?
+  password     String?
+
+  // relations
+  wallet       Wallet?
+  buySells     BuySell[]
+  bankCards BankCard[]
+
+  createdAt    DateTime     @default(now())
+}
+
+model Wallet {
+  id               Int              @id @default(autoincrement())
+  user             User?            @relation(fields: [userId], references: [id])
+  userId           Int              @unique
+
+  balanceType WalletBalanceTypeEnum?
+
+  walletHistories  WalletHistory[]
+
+  accountBalance   Float?           @default(0)
+  createdAt        DateTime         @default(now())
+}
+
+model WalletHistory {
+  id               Int              @id @default(autoincrement())
+  wallet           Wallet           @relation(fields: [walletId], references: [id])
+  walletId         Int
+
+  balance          Float
+  balanceType WalletBalanceTypeEnum?
+
+  createdAt        DateTime         @default(now())
+}
+
+model BuySell {
+  id               Int              @id @default(autoincrement())
+  name             String?
+  sell             Float?
+  buy              Float?
+  buyPrice              Float?
+  sellPrice              Float?
+  calculatedAmount              Float?
+
+  buySellHistories  BuySellHistory[]
+
+
+  user             User             @relation(fields: [userId], references: [id])
+  userId           Int
+
+  createdAt        DateTime         @default(now())
+}
+
+model BuySellHistory {
+  id               Int              @id @default(autoincrement())
+  buySell           BuySell           @relation(fields: [buySellId], references: [id])
+  buySellId         Int
+
+  name             String?
+  sell             Float?
+  buy              Float?
+
+  createdAt        DateTime         @default(now())
+}
+model BankCard {
+  id               Int              @id @default(autoincrement())
+  user             User             @relation(fields: [userId], references: [id]) 
+  userId           Int
+
+  cardNumber       String           @unique
+  cardHolderName   String
+  expiryDate       DateTime
+  cvv              Int
+  bankName         String?
+
+  createdAt        DateTime         @default(now())
+}
+
+
+enum GenderEnum {
+  MALE 
+  FEMALE
+}
+
+enum WalletBalanceTypeEnum {
+  WITHDRAW 
+  DEPOSIT
+}
